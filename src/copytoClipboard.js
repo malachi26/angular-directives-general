@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     var long2know;
     try {
         long2know = angular.module("long2know")
@@ -19,26 +19,32 @@
                 'long2know.constants'
             ]);
     }
-
-    var onRepeatFinish = function ($timeout) {
+    var copyToClipboard = function (clipboardService) {
         var directive = {
             restrict: 'A',
-            link: function (scope, element, attr) {
-                if (scope.$last === true) {
-                    if (attr.onRepeatFinish) {
-                        scope.$eval(attr.onRepeatFinish);
+            //scope: {
+            //    ngModel: '='
+            //},
+            require: ['?ngModel'],
+            link: function (scope, el, attrs, ctrls) {
+                el.on('click', function () {
+                    var value = undefined;
+                    if (ctrls && ctrls.length > 0 && ctrls[0]) {
+                        var ngModelCtrl = ctrls[0];
+                        value = ngModelCtrl.$viewValue;
                     } else {
-                        $timeout(function () {
-                            scope.$emit('ngRepeatFinished');
-                        });
+                        value = scope.$eval(attrs.copyToClipboard);
                     }
-                }
+
+                    clipboardService.copy(value);
+                });
             }
         };
+
         return directive;
     };
 
-    onRepeatFinish.$inject = ['$timeout', '$log'];
+    copyToClipboard.$inject = ['clipboardService'];
     angular.module("long2know.directives")
-        .directive('onRepeatFinish', onRepeatFinish);
+        .directive('copyToClipboard', copyToClipboard);
 })()

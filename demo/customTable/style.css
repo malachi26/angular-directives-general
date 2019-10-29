@@ -17,6 +17,12 @@ body {
 
 .buttons {
     margin-bottom:10px;
+    margin-top:10px;
+}
+
+.btn-default {
+    background-color: #F7F7F7;
+    border: 1px solid #eaeaea;
 }
 
 body, .container-fluid, .flex-layout
@@ -47,8 +53,172 @@ body, .container-fluid, .flex-layout
     -ms-flex: 2;
     flex: 2;
     margin-bottom:10px;
-    border: solid 1px;
-    padding:5px;
+    /*border: solid 1px;*/
+    /*padding:5px;*/
+}
+
+multiselect {
+    display: block;
+}
+
+    multiselect > .btn-group:not(.single),
+    customselect > .btn-group:not(.single) {
+        min-width: 150px;
+    }
+
+    multiselect > .btn-group.single,
+    customselect > .btn-group.single {
+        min-width: 75px;
+    }
+
+    multiselect > .btn-group,
+    .modal-form customselect > .btn-group {
+        width: 100%;
+    }
+
+    multiselect .btn,
+    customselect .btn {
+        width: 100%;
+        background-color: #FFF;
+    }
+
+        multiselect .btn.has-error,
+        customselect.btn.has-error {
+            border: 1px solid #a94442 !important;
+            color: #db524b;
+        }
+
+.multi-select-popup {
+    max-height: 400px;
+    min-width: 200px;
+    overflow-y: auto;
+}
+
+.custom-select-popup {
+    max-height: 400px;
+    min-width: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+    .custom-select-popup > li > .form-group > input {
+        max-width: none;
+        width: 100%;
+    }
+
+    .custom-select-popup > li > .form-group > ul {
+        max-width: 330px;
+    }
+
+    .multi-select-popup .filter,
+    .custom-select-popup .filter {
+        width: 100%;
+    }
+
+        .multi-select-popup .filter > input,
+        .custom-select-popup .filter > input {
+            width: 99%;
+            max-width: none;
+        }
+
+        .multi-select-popup .filter .glyphicon,
+        .custom-select-popup .filter .glyphicon {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+.multi-select-popup,
+.custom-select-popup {
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+multiselect > .btn-group > button,
+customselect > .btn-group > button {
+    padding-right: 20px;
+}
+
+    multiselect > .btn-group > button > .caret,
+    customselect > .btn-group > button > .caret {
+        right: 5px;
+        top: 45%;
+        position: absolute;
+    }
+
+multiselect > .btn-group:not(.dropup) > button > .caret,
+customselect > .btn-group:not(.dropup) > button > .caret {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid black;
+}
+
+.multi-select-popup > li:not(.filter-container),
+.custom-select-popup > li:not(.filter-container) {
+    padding-right: 10px;
+}
+
+.multi-select-popup .filter-container input::-ms-clear,
+.date-field::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.multi-select-popup .filter-container input::-ms-reveal,
+.date-field::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.multi-select-popup .filter-container input::-webkit-search-decoration,
+.multi-select-popup .filter-container input::-webkit-search-cancel-button,
+.multi-select-popup .filter-container input::-webkit-search-results-button,
+.multi-select-popup .filter-container input::-webkit-search-results-decoration,
+.date-field::-webkit-search-decoration,
+.date-field::-webkit-search-cancel-button,
+.date-field::-webkit-search-results-button,
+.date-field::-webkit-search-results-decoration {
+    display: none;
+}
+
+.multi-select-popup > li > a,
+.custom-select-popup > li > a {
+    padding: 3px 10px;
+    cursor: pointer;
+}
+
+    .multi-select-popup > li > a i,
+    .custom-select-popup > li > a i {
+        margin-right: 4px;
+    }
+
+/*Add padding if pagination is preceeded by another element with pagniation class*/
+.pagination ~ ul.pagination {
+    padding-left: 10px !important;
+}
+
+.pagination {
+    font-size: .8em;
+    height: 2.8em;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+    .pagination multiselect > .btn-group > button {
+        font-size: 1.0em;
+    }
+
+.multiselect-label ~ multiselect {
+    display: inline-block;
+}
+
+.pagination multiselect > .btn-group > button {
+    font-size: 1.0em;
+}
+
+.multiselect-label ~ multiselect {
+    display: inline-block;
 }
 
 /* TABLE STYLING */
@@ -57,6 +227,10 @@ body, .container-fluid, .flex-layout
     background-color: #f9f9f9;
     border: 1px solid #D7D7D7;
     width: 100%;
+}
+
+.custom-table.sticky-header {
+    margin: 0;
 }
 
     .custom-table th {
@@ -174,4 +348,99 @@ table thead .sorting_asc_disabled {
 
 table thead .sorting_desc_disabled {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NDNGQ0VGRjQyMkMxMTFFMUExRjFBREFENUIyQTUzOEMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NDNGQ0VGRjUyMkMxMTFFMUExRjFBREFENUIyQTUzOEMiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxNEMwMzk2QjIyQzExMUUxQTFGMUFEQUQ1QjJBNTM4QyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxNEMwMzk2QzIyQzExMUUxQTFGMUFEQUQ1QjJBNTM4QyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pnt2WfgAAACJSURBVHjaYvz//z8DtQATAxXBqGGjhtHDMBZsgnfv3o0EUguA+B8OB2QoKyvPJ9Zl64B4PxBzYMFHgXgNKd78CcQtQPwZTfw9EDdjEScYZiAXoHtlPRAfICcCQMXJJCC+A+U/AeJeqDhZsXkXiCcA8W+owddIjk00MBuIVYF4KiGFjIO2cAQIMAAzGSDTlIC38gAAAABJRU5ErkJggg==);
+}
+
+td.is-negative {
+    color: #FFFFFF;
+    background-color: #B1504A !important;
+}
+
+.is-error,
+.is-error-add.is-error-add-active {
+    color: #FFFFFF;
+    background-color: #a94442;
+}
+
+    .is-error a, .is-error-add.is-error-add-active a {
+        color: #FFFFFF;
+    }
+
+.is-error-remove.is-error-remove-active {
+    background-color: #FFFFFF !important;
+}
+
+.is-error-add, .is-error-remove {
+    -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -moz-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -o-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+
+.table-striped > tbody > tr.is-error:nth-of-type(odd),
+.table-striped > tbody > tr.is-error-add.is-error-add-active:nth-of-type(odd) {
+    color: #FFFFFF;
+    background-color: #a94442;
+}
+
+.table-striped > tbody > tr.is-error:nth-of-type(even),
+.table-striped > tbody > tr.is-error-add.is-error-add-active:nth-of-type(even) {
+    color: #FFFFFF;
+    background-color: #b15654;
+}
+
+.table-striped.table-bordered > tbody > tr.is-error:nth-of-type(odd) td {
+    border-bottom: 1px solid #dc7675;
+}
+
+.table-striped.table-bordered > tbody > tr.is-error:nth-of-type(even) td {
+    border-bottom: 1px solid #dc7675;
+}
+
+.table-hover > tbody > tr.is-error:hover {
+    background-color: #dc7675;
+}
+
+.is-summary,
+.is-summary-add.is-summary-add-active {
+    color: black;
+    background-color: #bfccdd;
+}
+
+    .is-summary a, .is-summary-add.is-summary-add-active a {
+        color: black;
+    }
+
+.is-summary-remove.is-summary-remove-active {
+    background-color: #FFFFFF !important;
+}
+
+.is-summary-add, .is-summary-remove {
+    -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -moz-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -o-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+
+.table-striped > tbody > tr.is-summary:nth-of-type(odd),
+.table-striped > tbody > tr.is-summary-add.is-summary-add-active:nth-of-type(odd) {
+    color: black;
+    background-color: #a7b4c5;
+}
+
+.table-striped > tbody > tr.is-summary:nth-of-type(even),
+.table-striped > tbody > tr.is-summary-add.is-summary-add-active:nth-of-type(even) {
+    color: black;
+    background-color: #bfccdd;
+}
+
+.table-striped.table-bordered > tbody > tr.is-summary:nth-of-type(odd) td {
+    border-bottom: 1px solid #99a4b2;
+}
+
+.table-striped.table-bordered > tbody > tr.is-summary:nth-of-type(even) td {
+    border-bottom: 1px solid #99a4b2;
+}
+
+.table-hover > tbody > tr.is-summary:hover {
+    background-color: #99a4b2;
 }

@@ -61,12 +61,17 @@
                     isAutoFocus = attrs.autoFocus ? originalScope.$eval(attrs.autoFocus) : false,
                     isComplex = attrs.complexModels ? originalScope.$eval(attrs.complexModels) : false,
                     enableFilter = attrs.enableFilter ? originalScope.$eval(attrs.enableFilter) : true,
+                    enableCheckAll = attrs.enableCheckAll ? originalScope.$eval(attrs.enableCheckAll) : true,
+                    enableUncheckAll = attrs.enableUncheckAll ? originalScope.$eval(attrs.enableUncheckAll) : true,
                     header = attrs.header ? attrs.header : "Select",
                     selectedHeader = attrs.selectedHeader ? attrs.selectedHeader : 'selected',
                     selectLimit = attrs.selectLimit ? originalScope.$eval(attrs.selectLimit) : 0,
                     useFiltered = attrs.selectLimitUseFiltered ? originalScope.$eval(attrs.selectLimitUseFiltered) : true,
                     filterPlaceholder = attrs.filterPlaceholder ? attrs.filterPlaceholder : "Filter ..",
+                    checkAllLabel = attrs.checkAllLabel ? attrs.checkAllLabel : "Check all",
+                    uncheckAllLabel = attrs.uncheckAllLabel ? attrs.uncheckAllLabel : "Uncheck all",
                     appendToBody = attrs.appendToBody ? originalScope.$eval(attrs.appendToBody) : false,
+                    orderLabel = attrs.orderLabel ? attrs.orderLabel : "$index",
                     required = false,
                     lastSelectedLabel = '',
                     scope = originalScope.$new(true),
@@ -96,15 +101,17 @@
                     canCheck = function () {
                         var belowLimit = false;
                         var atLimit = false;
+                        var aboveLimit = false;
                         if (selectLimit === 0 || !isMultiple) {
                             belowLimit = true;
                             atLimit = false;
                         } else {
                             var checkedItems = scope.items.filter(isChecked);
                             atLimit = checkedItems.length === selectLimit;
+                            aboveLimit = checkedItems.length > selectLimit;
                             belowLimit = checkedItems.length < selectLimit;
                         }
-                        scope.maxSelected = atLimit;
+                        scope.maxSelected = atLimit || aboveLimit;
                         return atLimit || belowLimit;
                     },
                     getHeaderText = function () {
@@ -163,102 +170,141 @@
                         setModelValue(false);
                     },
                     selectMultiple = function (item) {
-                        item.checked = !item.checked;
-                        if (!canCheck()) {
+                        if (item.checked) {
                             item.checked = false;
+                            canCheck();
+                        } else if (!scope.maxSelected) {
+                            item.checked = canCheck();
                         }
                         setModelValue(true);
                     },
-                    setModelValue = function (isMultiple) {
-                        var value;
-                        if (isMultiple) {
-                            value = [];
-                            angular.forEach(scope.items, function (item) {
-                                // If map simple values
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value.push(item.model);
-                                    } else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value.push(parserResult.modelMapper(local));
-                                    }
-                                }
-                            })
-                        } else {
-                            angular.forEach(scope.items, function (item) {
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value = item.model;
-                                        return false;
-                                    }
-                                    else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value = parserResult.modelMapper(local);
-                                        return false;
-                                    }
-                                }
-                            })
-                        }
-                        modelCtrl.$setViewValue(value);
-                    },
-
-                    markChecked = function (newVal) {
-                        if (!angular.isArray(newVal)) {
-                            angular.forEach(scope.items, function (item) {
-                                if (angular.equals(item.model, newVal)) {
-                                    item.checked = true;
-                                    return false;
-                                }
-                            });
-                        } else {
-                            angular.forEach(newVal, function (i) {
-                                angular.forEach(scope.items, function (item) {
-                                    if (angular.equals(item.model, i)) {
-                                        item.checked = true;
-                                    }
-                                });
-                            });
-                        }
-                    },
-
-                    // recalculate actual position and set new values to scope
-                    // after digest loop is popup in right position
-                    recalculatePosition = function () {
-                        scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
-                        scope.position.top += $popup.prop('offsetHeight');
-                    },
-
-                    fireRecalculating = function () {
-                        if (!scope.moveInProgress) {
-                            scope.moveInProgress = true;
-                            scope.$digest();
-                        }
-
-                        // Cancel previous timeout
-                        if (timeoutEventPromise) {
-                            $timeout.cancel(timeoutEventPromise);
-                        }
-
-                        // Debounced executing recalculate after events fired
-                        timeoutEventPromise = $timeout(function () {
-                            // if popup is visible
-                            if (scope.isOpen) {
-                                recalculatePosition();
+            getModelValue = function (item) {
+                if (isComplex) {
+                    value = item.model;
+                }
+                else {
+                    var local = {};
+                    local[parserResult.itemName] = item.model;
+                    value = parserResult.modelMapper(local);
+                }
+                return value;
+            },
+            setModelValue = function (isMultiple) {
+                var value;
+                if (isMultiple) {
+                    value = [];
+                    angular.forEach(scope.items, function (item) {
+                        // If map simple values
+                        if (item.checked) {
+                            if (isComplex) {
+                                value.push(item.model);
+                            } else {
+                                var local = {};
+                                local[parserResult.itemName] = item.model;
+                                value.push(parserResult.modelMapper(local));
                             }
-                            scope.moveInProgress = false;
-                            scope.$digest();
-                        }, eventDebounceTime);
+                        }
+                    })
+                } else {
+                    angular.forEach(scope.items, function (item) {
+                        if (item.checked) {
+                            if (isComplex) {
+                                value = item.model;
+                                return false;
+                            }
+                            else {
+                                var local = {};
+                                local[parserResult.itemName] = item.model;
+                                value = parserResult.modelMapper(local);
+                                return false;
+                            }
+                        }
+                    })
+                }
+                scope.triggered = true;
+                modelCtrl.$setViewValue(value);
+            },
+
+            markChecked = function (newVal) {
+                if (!angular.isArray(newVal)) {
+                    angular.forEach(scope.items, function (item) {
+                        var value = getModelValue(item);
+                        if (angular.equals(value, newVal)) {
+                            item.checked = true;
+                            return false;
+                        }
+                    });
+                } else {
+                    var itemsToCheck = [];
+                    var itemsToUncheck = [];
+                    var itemValues = [];
+                    for (var j = 0; j < scope.items.length; j++) {
+                        itemValues.push(getModelValue(scope.items[j]));
+                        itemsToUncheck.push(j);
                     };
+
+                    for (var i = 0; i < newVal.length; i++) {
+                        for (var j = 0; j < itemValues.length; j++) {
+                            if (angular.equals(itemValues[j], newVal[i])) {
+                                itemsToCheck.push(scope.items[j]);
+                                var index = itemsToUncheck.indexOf(j);
+                                itemsToUncheck.splice(index, 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    for (var i = 0; i < itemsToCheck.length; i++) {
+                        itemsToCheck[i].checked = true;
+                    }
+
+                    for (var i = 0; i < itemsToUncheck.length; i++) {
+                        scope.items[itemsToUncheck[i]].checked = false;
+                    }
+
+                }
+            },
+
+            // recalculate actual position and set new values to scope
+            // after digest loop is popup in right position
+            recalculatePosition = function () {
+                scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
+                scope.position.top += $popup.prop('offsetHeight');
+            },
+
+            fireRecalculating = function () {
+                if (!scope.moveInProgress) {
+                    scope.moveInProgress = true;
+                    scope.$digest();
+                }
+
+                // Cancel previous timeout
+                if (timeoutEventPromise) {
+                    $timeout.cancel(timeoutEventPromise);
+                }
+
+                // Debounced executing recalculate after events fired
+                timeoutEventPromise = $timeout(function () {
+                    // if popup is visible
+                    if (scope.isOpen) {
+                        recalculatePosition();
+                    }
+                    scope.moveInProgress = false;
+                    scope.$digest();
+                }, eventDebounceTime);
+            };
 
                 scope.items = [];
                 scope.header = header;
                 scope.multiple = isMultiple;
                 scope.disabled = false;
                 scope.filterPlaceholder = filterPlaceholder;
+                scope.checkAllLabel = checkAllLabel;
+                scope.uncheckAllLabel = uncheckAllLabel;
                 scope.selectLimit = selectLimit;
                 scope.enableFilter = enableFilter;
+                scope.enableCheckAll = enableCheckAll;
+                scope.enableUncheckAll = enableUncheckAll;
                 scope.searchText = { label: '' };
                 scope.isAutoFocus = isAutoFocus;
                 scope.appendToBody = appendToBody;
@@ -266,7 +312,7 @@
                 scope.popupId = popupId;
                 scope.recalculatePosition = recalculatePosition;
                 scope.isModelValueSet = false;
-
+                scope.orderLabel = orderLabel;
                 originalScope.$on('$destroy', function () {
                     scope.$destroy();
                     $document.unbind('click', scope.clickHandler);
@@ -310,6 +356,7 @@
                 }, function (newVal) {
                     if (angular.isDefined(newVal)) {
                         parseModel();
+                        setModelValue(isMultiple);
                     }
                 }, true);
 
@@ -317,23 +364,31 @@
                 scope.$watch(function () {
                     return modelCtrl.$modelValue;
                 }, function (newVal, oldVal) {
-                    //when directive initialize, newVal usually undefined. Also, if model value already set in the controller
-                    //for preselected list then we need to mark checked in our scope item. But we don't want to do this every time
+                    //when directive initializes, newVal is usually undefined. Also, if model value is already set in the controller
+                    //for preselected list then we need to mark checked in our scope item. But we don't want to do this every time the
                     //model changes. We need to do this only if it is done outside directive scope, from controller, for example.
-                    if (angular.isDefined(newVal)) {
-                        markChecked(newVal);
-                        scope.isModelValueSet = true;
-                        // Technically, defining ngChange will already have a watcher triggering its handler
-                        // So, triggering it manually should be redundant
-                        //scope.$eval(changeHandler);
-                    } else if (scope.isModelValueSet) {
-                        // If the model value is cleared externally, and we previously had some things checked,
-                        // we need to uncheck them.
-                        scope.uncheckAll();
-                        scope.isModelValueSet = false;
+                    if (!scope.triggered) {
+                        if (angular.isDefined(newVal)) {
+                            var isArray = newVal instanceof Array;
+                            if ((isArray && newVal.length == 0) || !isArray) {
+                                scope.uncheckAll();
+                            }
+                            markChecked(newVal);
+                            scope.isModelValueSet = true;
+                            // Technically, defining ngChange will already have a watcher triggering its handler
+                            // So, triggering it manually should be redundant
+                            //scope.$eval(changeHandler);
+                        } else if (scope.isModelValueSet) {
+                            // If the model value is cleared externally, and we previously had some things checked,
+                            // we need to uncheck them.
+                            scope.uncheckAll();
+                            scope.isModelValueSet = false;
+                        }
                     }
                     getHeaderText();
+                    canCheck();
                     modelCtrl.$setValidity('required', scope.valid());
+                    scope.triggered = false;
                 }, true);
 
                 parseModel();
@@ -436,14 +491,16 @@
                             if (element == elementArray[i])
                                 return true;
                         return false;
-                    }, 
-                    dropdownHeight,
-                    dropdownWidth;
+                    };
 
                 scope.clickHandler = clickHandler;
                 scope.isVisible = false;
                 scope.isHeightChanged = true;
-                
+
+                var
+                    dropdownHeight,
+                    dropdownWidth;
+
                 scope.toggleSelect = function () {
                     if (element.hasClass('open') || scope.isOpen) {
                         element.removeClass('open');
@@ -465,7 +522,7 @@
                     var windowHeight = $(window).height();
                     var windowWidth = $(window).width();
                     var ulElement = element.find("ul:first");
-                    
+
                     if (scope.isHeightChanged) {
                         dropdownHeight = ulElement.height();
                         dropdownWidth = ulElement.width();
@@ -526,28 +583,29 @@
         }
     };
 
+    // IE11 doesn't enable the filter box when parent changes is using disabled attribute - so, use ng-disabled in your own HTML!
     angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/multiselect/multiselectPopup.html",
             "<div class=\"btn-group\" ng-class=\"{ dropup: dropup, single: !multiple }\">" +
-                "<button class=\"btn btn-default dropdown-toggle\" ng-click=\"toggleSelect()\" ng-disabled=\"disabled\" ng-class=\"{'has-error': !valid()}\">" +
+                "<button type=\"button\" class=\"btn btn-default dropdown-toggle\" ng-click=\"toggleSelect()\" ng-disabled=\"disabled\" ng-class=\"{'has-error': !valid()}\">" +
                     "<span class=\"pull-left\" ng-bind=\"header\"></span>" +
                     "<span class=\"caret pull-right\"></span>" +
                 "</button>" +
-                "<ul class=\"dropdown-menu multi-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {}}[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
+                "<ul class=\"dropdown-menu multi-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {} }[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
                     "<li ng-if=\"enableFilter\" class=\"filter-container\">" +
                         "<div class=\"form-group has-feedback filter\">" +
                             "<input class=\"form-control\" type=\"text\" ng-model=\"searchText.label\" placeholder=\"{{ filterPlaceholder }}\" />" +
                             "<span class=\"glyphicon glyphicon-remove-circle form-control-feedback\" ng-click=\"clearFilter()\"></span>" +
                         "</div>" +
                     "</li>" +
-                    "<li ng-show=\"multiple\">" +
-                        "<button class=\"btn-link btn-small\" ng-click=\"checkAll()\"><i class=\"icon-ok\"></i> Check all</button>" +
-                        "<button class=\"btn-link btn-small\" ng-click=\"uncheckAll()\"><i class=\"icon-remove\"></i> Uncheck all</button>" +
+                    "<li ng-show=\"multiple && (enableCheckAll || enableUncheckAll)\">" +
+                        "<button ng-if=\"enableCheckAll\" type=\"button\" class=\"btn-link btn-small\" ng-click=\"checkAll()\"><i class=\"icon-ok\"></i> {{ checkAllLabel }}</button>" +
+                        "<button ng-if=\"enableUncheckAll\" type=\"button\" class=\"btn-link btn-small\" ng-click=\"uncheckAll()\"><i class=\"icon-remove\"></i> {{ uncheckAllLabel }}</button>" +
                     "</li>" +
                     "<li ng-show=\"maxSelected\">" +
                         "<small>Selected maximum of </small><small ng-bind=\"selectLimit\"></small>" +
                     "</li>" +
-                    "<li ng-repeat=\"i in items | filter:searchText\">" +
+                    "<li ng-repeat=\"i in items | filter:searchText | orderBy:orderLabel:true\">" +
                         //"<a ng-click=\"select(i); focus()\">" +
                         "<a ng-click=\"select(i);\">" +
                             "<i class=\"glyphicon\" ng-class=\"{'glyphicon-ok': i.checked, 'glyphicon-none': !i.checked}\"></i>" +
